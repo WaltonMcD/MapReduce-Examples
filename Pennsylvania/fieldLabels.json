@@ -1,0 +1,10 @@
+[
+    {
+        "name": "epoch_time",
+        "label": "Year"
+    },
+    {
+        "name": "GISJOIN",
+        "label": "GIS Join Match Code"
+    }
+]
