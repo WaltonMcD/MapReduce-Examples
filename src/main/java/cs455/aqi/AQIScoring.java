@@ -2,6 +2,9 @@ package cs455.aqi;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.ZoneOffset;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -30,15 +33,24 @@ public class AQIScoring {
     }
 
     public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
-        private Text joinText = new Text();
+        private Text data = new Text();
+        private Text date = new Text();
+        private IntWritable aqi = new IntWritable();
+        private DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String line = value.toString();
             StringTokenizer itr = new StringTokenizer(line, ",");
-            joinText.set(itr.nextToken());
-            int aqi = Integer.parseInt(itr.nextToken());
-            context.write(joinText, new IntWritable(aqi));
-            
+            String joinText = (itr.nextToken());
+            aqi.set(Integer.parseInt(itr.nextToken()));
+
+            Long time_ms = Long.parseLong(itr.nextToken())/1000;
+            LocalDateTime epoch = LocalDateTime.ofEpochSecond(time_ms, 0, ZoneOffset.UTC);
+            String epochString = epoch.format(fmt);
+            date.set(epochString);
+
+            data.set(joinText +" : "+ date);
+            context.write(data, aqi);
         }
     }
 
@@ -46,12 +58,12 @@ public class AQIScoring {
         private IntWritable result = new IntWritable();
 
         public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-        int sum = 0;
-        for (IntWritable val : values) {
-            sum += val.get();
-        }
-        result.set(sum);
-        context.write(key, result);
+            int sum = 0;
+            for (IntWritable val : values) {
+                sum += val.get();
+            }
+            result.set(sum);
+            context.write(key, result);
         }
     }
 }
