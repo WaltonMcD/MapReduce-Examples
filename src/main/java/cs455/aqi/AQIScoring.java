@@ -25,6 +25,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 public class AQIScoring {
     
     public static void main(String[] args) throws Exception {
+        System.out.println(args[0]);
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "aqi total");
         job.setJarByClass(AQIScoring.class);
