@@ -22,12 +22,12 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-public class AQIScoring {
+public class Question1 {
     
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "aqi total");
-        job.setJarByClass(AQIScoring.class);
+        job.setJarByClass(Question1.class);
         job.setMapperClass(TokenizerMapper.class);
         // job.setCombinerClass(IntSumReducer.class);
         job.setReducerClass(IntSumReducer.class);
