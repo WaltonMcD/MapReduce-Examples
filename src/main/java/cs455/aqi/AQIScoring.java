@@ -42,7 +42,6 @@ public class AQIScoring {
 
     public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
         private Text date = new Text();
-        private Text data = new Text();
         private IntWritable aqi = new IntWritable();
         private DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
@@ -55,33 +54,26 @@ public class AQIScoring {
             Long time_ms = Long.parseLong(itr.nextToken())/1000;
             LocalDateTime epoch = LocalDateTime.ofEpochSecond(time_ms, 0, ZoneOffset.UTC);
             DayOfWeek day = epoch.getDayOfWeek();
-            String epochString = epoch.format(fmt);
             String dayString = day.toString();
             date.set(dayString);
 
-            data.set(joinText +" : "+ date);
-            context.write(data, aqi);
+            context.write(date, aqi);
         }
     }
 
-    public static class IntSumReducer extends Reducer<Text,IntWritable,Text,Text> {
-        private Text result = new Text();
+    public static class IntSumReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
+        private IntWritable result = new IntWritable();
 
         public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-            Integer max = Integer.MIN_VALUE;
-            Integer min = Integer.MAX_VALUE;
+            Integer sum = 0;
+            Integer count = 0;
             for (IntWritable val : values) {
-                Integer value = val.get();
-                if(value < min){
-                    min = value;
-                }
-                if(value > max){
-                    max = value;
-                }
+                sum += val.get();
+                count++;
             }
             
-            String res = "MAX: " + max + " MIN: " + min;
-            result.set(res);
+            Integer average = sum/count;
+            result.set(average);
             context.write(key, result);
         }
     }
