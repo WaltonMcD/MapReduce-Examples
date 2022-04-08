@@ -2,10 +2,7 @@ package cs455.aqi;
 
 import java.io.IOException;
 
-import java.util.StringTokenizer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -63,7 +60,11 @@ public class Question1 {
     }
 
     public static class IntSumReducer extends Reducer<Text,IntWritable,Text,DoubleWritable> {
-        private DoubleWritable result = new DoubleWritable();
+        private TreeMap<String, Double> tmap;
+
+        public void setup(Context context) throws IOException, InterruptedException {
+            tmap = new TreeMap<String, Double>();
+        }
 
         public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
             Double sum = 0.0;
@@ -72,10 +73,17 @@ public class Question1 {
                 sum += val.get();
                 count++;
             }
-            
+            String day = key.toString();
             Double average = sum/count;
-            result.set(average);
-            context.write(key, result);
+            tmap.put(day,average);
+        }
+
+        public void cleanup(Context context) throws IOException, InterruptedException {
+            for (Map.Entry<String, Double> entry : tmap.entrySet()) {
+                String day = entry.getKey();
+                Double aqiAvg = entry.getValue();
+                context.write(new Text(day), new DoubleWritable(aqiAvg));
+            }
         }
     }
 }
