@@ -60,10 +60,10 @@ public class Question1 {
     }
 
     public static class IntSumReducer extends Reducer<Text,IntWritable,Text,DoubleWritable> {
-        private TreeMap<String, Double> tmap2;
+        private TreeMap<String, Double> tmap;
 
         public void setup(Context context) throws IOException, InterruptedException {
-            tmap2 = new TreeMap<String, Double>();
+            tmap = new TreeMap<String, Double>();
         }
 
         public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
@@ -75,11 +75,11 @@ public class Question1 {
             }
             String day = key.toString();
             Double average = sum/count;
-            tmap2.put(day,average);
+            tmap.put(day,average);
         }
 
         public void cleanup(Context context) throws IOException, InterruptedException {
-            for (Map.Entry<String, Double> entry : tmap2.entrySet()) {
+            for (Map.Entry<String, Double> entry : tmap.entrySet()) {
  
                 String day = entry.getKey();
                 Double aqiAvg = entry.getValue();
