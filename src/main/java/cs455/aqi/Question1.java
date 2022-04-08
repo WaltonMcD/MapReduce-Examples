@@ -15,6 +15,7 @@ import java.time.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -34,7 +35,7 @@ public class Question1 {
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(IntWritable.class);
         job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
+        job.setOutputValueClass(DoubleWritable.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
         System.exit(job.waitForCompletion(true) ? 0 : 1);
@@ -61,18 +62,18 @@ public class Question1 {
         }
     }
 
-    public static class IntSumReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
-        private IntWritable result = new IntWritable();
+    public static class IntSumReducer extends Reducer<Text,IntWritable,Text,DoubleWritable> {
+        private DoubleWritable result = new DoubleWritable();
 
         public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-            Integer sum = 0;
-            Integer count = 0;
+            Double sum = 0.0;
+            Double count = 0.0;
             for (IntWritable val : values) {
                 sum += val.get();
                 count++;
             }
             
-            Integer average = sum/count;
+            Double average = sum/count;
             result.set(average);
             context.write(key, result);
         }
