@@ -80,7 +80,6 @@ public class Question1 {
 
         public void cleanup(Context context) throws IOException, InterruptedException {
             for (Map.Entry<String, Double> entry : tmap.entrySet()) {
- 
                 String day = entry.getKey();
                 Double aqiAvg = entry.getValue();
                 context.write(new Text(day), new DoubleWritable(aqiAvg));
