@@ -39,33 +39,23 @@ public class Question1 {
     }
 
     public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
+        private Text date = new Text();
+        private IntWritable aqi = new IntWritable();
         private DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-        private TreeMap<String, Integer> tmap;
-
-        public void setup(Context context) throws IOException, InterruptedException {
-            tmap = new TreeMap<String, Integer>();
-        }
 
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String line = value.toString();
             StringTokenizer itr = new StringTokenizer(line, ",");
             String joinText = (itr.nextToken());
-            Integer aqiValue = Integer.parseInt(itr.nextToken());
+            aqi.set(Integer.parseInt(itr.nextToken()));
 
             Long time_ms = Long.parseLong(itr.nextToken())/1000;
             LocalDateTime epoch = LocalDateTime.ofEpochSecond(time_ms, 0, ZoneOffset.UTC);
             DayOfWeek day = epoch.getDayOfWeek();
             String dayString = day.toString();
-            tmap.put(dayString, aqiValue);
-        }
+            date.set(dayString);
 
-        public void cleanup(Context context) throws IOException, InterruptedException {
-            for (Map.Entry<String, Integer> entry : tmap.entrySet()){
-                String day = entry.getKey();
-                Integer aqi = entry.getValue();
-
-                context.write(new Text(day), new IntWritable(aqi));
-            }
+            context.write(date, aqi);
         }
     }
 
@@ -83,7 +73,6 @@ public class Question1 {
                 sum += val.get();
                 count++;
             }
-            
             String day = key.toString();
             Double average = sum/count;
             tmap2.put(day,average);
