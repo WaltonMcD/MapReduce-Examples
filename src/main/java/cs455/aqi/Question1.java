@@ -2,10 +2,7 @@ package cs455.aqi;
 
 import java.io.IOException;
 
-import java.util.StringTokenizer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -42,28 +39,42 @@ public class Question1 {
     }
 
     public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
-        private Text date = new Text();
-        private IntWritable aqi = new IntWritable();
         private DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        private TreeMap<String, Integer> tmap;
+
+        public void setup(Context context) throws IOException, InterruptedException {
+            tmap = new TreeMap<String, Integer>();
+        }
 
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String line = value.toString();
             StringTokenizer itr = new StringTokenizer(line, ",");
             String joinText = (itr.nextToken());
-            aqi.set(Integer.parseInt(itr.nextToken()));
+            Integer aqiValue = Integer.parseInt(itr.nextToken());
 
             Long time_ms = Long.parseLong(itr.nextToken())/1000;
             LocalDateTime epoch = LocalDateTime.ofEpochSecond(time_ms, 0, ZoneOffset.UTC);
             DayOfWeek day = epoch.getDayOfWeek();
             String dayString = day.toString();
-            date.set(dayString);
+            tmap.put(dayString, aqiValue);
+        }
 
-            context.write(date, aqi);
+        public void cleanup(Context context) throws IOException, InterruptedException {
+            for (Map.Entry<String, Integer> entry : tmap.entrySet()){
+                String day = entry.getKey();
+                Integer aqi = entry.getValue();
+
+                context.write(new Text(day), new IntWritable(aqi));
+            }
         }
     }
 
     public static class IntSumReducer extends Reducer<Text,IntWritable,Text,DoubleWritable> {
-        private DoubleWritable result = new DoubleWritable();
+        private TreeMap<String, Double> tmap2;
+
+        public void setup(Context context) throws IOException, InterruptedException {
+            tmap2 = new TreeMap<String, Double>();
+        }
 
         public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
             Double sum = 0.0;
@@ -73,9 +84,18 @@ public class Question1 {
                 count++;
             }
             
+            String day = key.toString();
             Double average = sum/count;
-            result.set(average);
-            context.write(key, result);
+            tmap2.put(day,average);
+        }
+
+        public void cleanup(Context context) throws IOException, InterruptedException {
+            for (Map.Entry<String, Double> entry : tmap2.entrySet()) {
+ 
+                String day = entry.getKey();
+                Double aqiAvg = entry.getValue();
+                context.write(new Text(day), new DoubleWritable(aqiAvg));
+            }
         }
     }
 }
