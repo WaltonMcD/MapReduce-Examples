@@ -30,14 +30,12 @@ public class TenCountiesBest {
         Job job = Job.getInstance(conf, "aqi total");
         job.setJarByClass(TenCountiesBest.class);
         job.setMapperClass(TokenizerMapper.class);
-        // job.setCombinerClass(IntSumReducer.class);
         job.setReducerClass(IntSumReducer.class);
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(IntWritable.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
-        //FileInputFormat.addInputPath(job, new Path(args[1]));
         FileOutputFormat.setOutputPath(job, new Path(args[2]+"/topTen"));
         job.waitForCompletion(true);
 
@@ -45,14 +43,11 @@ public class TenCountiesBest {
         Job job2 = Job.getInstance(conf2, "aqi total");
         job2.setJarByClass(TenCountiesBest.class);
         job2.setMapperClass(LocationMapper.class);
-        // job.setCombinerClass(IntSumReducer.class);
         job2.setReducerClass(LocationReducer.class);
         job2.setMapOutputKeyClass(Text.class);
         job2.setMapOutputValueClass(Text.class);
         job2.setOutputKeyClass(Text.class);
         job2.setOutputValueClass(NullWritable.class);
-        //MultipleInputs.addInputPath(job2,new Path(args[2]),TextInputFormat.class,PathReducerMapper.class);
-        //MultipleInputs.addInputPath(job2,new Path(args[0]),TextInputFormat.class,PathReducerMapper.class);
         FileInputFormat.addInputPath(job2, new Path(args[2]+"/topTen"));
         FileInputFormat.addInputPath(job2, new Path(args[1]));
         FileOutputFormat.setOutputPath(job2, new Path(args[2]+"/output"));
@@ -68,17 +63,11 @@ public class TenCountiesBest {
             }else{
                 context.write(join, new Text(line[1] + " " + line[2]));
             }
-            //context.write(join, new Text(String.valueOf(line.length)));
         }
     }
 
     public static class LocationReducer extends Reducer<Text,Text,Text,NullWritable> {
         
-        // private ArrayList<String[]> aqi_averages;
-        // @Override
-        // protected void setup(Context context) {
-        //     aqi_averages = new ArrayList<String[]>();
-        // }
         @Override
         protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             String out = "";
@@ -92,27 +81,6 @@ public class TenCountiesBest {
             }
                 
         }
-        // @Override
-        // protected void cleanup(Context context) throws IOException, InterruptedException { 
-        //     Collections.sort(aqi_averages, new Comparator<String[]>() {
-        //         public int compare(String[] avg1, String[] avg2) {
-        //             if(Integer.parseInt(avg1[1]) < Integer.parseInt(avg2[1])){
-        //                 return -1;
-        //             }else if(Integer.parseInt(avg1[1]) > Integer.parseInt(avg2[1])){
-        //                 return 1;
-        //             }else{
-        //                 return 0;
-        //             }
-                    
-        //         }
-        //     });
-        //     for(String[] i : aqi_averages.subList(0,9)){
-        //         context.write(new Text(i[0]+","+i[1]), NullWritable.get());
-        //     }
-        //     for(String[] i : aqi_averages.subList(aqi_averages.size()-10,aqi_averages.size())){
-        //         context.write(new Text(i[0]+","+i[1]), NullWritable.get());
-        //     }
-        // }
     }    
 
     public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
@@ -148,7 +116,6 @@ public class TenCountiesBest {
             }
             String[] info = {key.toString(),String.valueOf(sum/size)};
             aqi_averages.add(info);
-            //context.write( key, new Text(String.valueOf(sum/size)) );
         }
         @Override
         protected void cleanup(Context context) throws IOException, InterruptedException { 
