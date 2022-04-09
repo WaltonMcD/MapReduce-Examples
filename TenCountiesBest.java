@@ -16,6 +16,7 @@ import java.time.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -37,24 +38,82 @@ public class TenCountiesBest {
         job.setOutputValueClass(Text.class);
         FileInputFormat.addInputPath(job, new Path(args[0]));
         //FileInputFormat.addInputPath(job, new Path(args[1]));
-        FileOutputFormat.setOutputPath(job, new Path(args[2]));
-        // job.waitForCompletion(true); +"/tmp/averages"
+        FileOutputFormat.setOutputPath(job, new Path(args[2]+"/topTen"));
+        job.waitForCompletion(true);
 
-        // Configuration conf = new Configuration();
-        // Job job2 = Job.getInstance(conf, "aqi total");
-        // job2.setJarByClass(TenCountiesBest.class);
-        // job2.setMapperClass(TokenizerMapper.class);
-        // // job.setCombinerClass(IntSumReducer.class);
-        // job2.setReducerClass(IntSumReducer.class);
-        // job2.setMapOutputKeyClass(Text.class);
-        // job2.setMapOutputValueClass(IntWritable.class);
-        // job2.setOutputKeyClass(Text.class);
-        // job2.setOutputValueClass(Text.class);
-        // FileInputFormat.addInputPath(job2, new Path(args[0]));
-        // //FileInputFormat.addInputPath(job, new Path(args[1]));
-        // FileOutputFormat.setOutputPath(job2, new Path(args[2]+"/tmp/averages"));
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+        Configuration conf2 = new Configuration();
+        Job job2 = Job.getInstance(conf2, "aqi total");
+        job2.setJarByClass(TenCountiesBest.class);
+        job2.setMapperClass(LocationMapper.class);
+        // job.setCombinerClass(IntSumReducer.class);
+        job2.setReducerClass(LocationReducer.class);
+        job2.setMapOutputKeyClass(Text.class);
+        job2.setMapOutputValueClass(Text.class);
+        job2.setOutputKeyClass(Text.class);
+        job2.setOutputValueClass(NullWritable.class);
+        //MultipleInputs.addInputPath(job2,new Path(args[2]),TextInputFormat.class,PathReducerMapper.class);
+        //MultipleInputs.addInputPath(job2,new Path(args[0]),TextInputFormat.class,PathReducerMapper.class);
+        FileInputFormat.addInputPath(job2, new Path(args[2]+"/topTen"));
+        FileInputFormat.addInputPath(job2, new Path(args[1]));
+        FileOutputFormat.setOutputPath(job2, new Path(args[2]+"/output"));
+        System.exit(job2.waitForCompletion(true) ? 0 : 1);
     }
+    public static class LocationMapper extends Mapper<Object, Text, Text, Text>{
+        @Override
+        protected void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+            String[] line = value.toString().split(",");
+            Text join = new Text(line[0]);
+            if(line.length < 3){
+                context.write(join, new Text(line[1]));
+            }else{
+                context.write(join, new Text(line[1] + " " + line[2]));
+            }
+            //context.write(join, new Text(String.valueOf(line.length)));
+        }
+    }
+
+    public static class LocationReducer extends Reducer<Text,Text,Text,NullWritable> {
+        
+        // private ArrayList<String[]> aqi_averages;
+        // @Override
+        // protected void setup(Context context) {
+        //     aqi_averages = new ArrayList<String[]>();
+        // }
+        @Override
+        protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+            String out = "";
+            int size = 0;
+            for (Text val : values) {
+                size += 1;
+                out += val.toString() + " ";
+            }
+            if(size > 1){
+                context.write( new Text(out), NullWritable.get());
+            }
+                
+        }
+        // @Override
+        // protected void cleanup(Context context) throws IOException, InterruptedException { 
+        //     Collections.sort(aqi_averages, new Comparator<String[]>() {
+        //         public int compare(String[] avg1, String[] avg2) {
+        //             if(Integer.parseInt(avg1[1]) < Integer.parseInt(avg2[1])){
+        //                 return -1;
+        //             }else if(Integer.parseInt(avg1[1]) > Integer.parseInt(avg2[1])){
+        //                 return 1;
+        //             }else{
+        //                 return 0;
+        //             }
+                    
+        //         }
+        //     });
+        //     for(String[] i : aqi_averages.subList(0,9)){
+        //         context.write(new Text(i[0]+","+i[1]), NullWritable.get());
+        //     }
+        //     for(String[] i : aqi_averages.subList(aqi_averages.size()-10,aqi_averages.size())){
+        //         context.write(new Text(i[0]+","+i[1]), NullWritable.get());
+        //     }
+        // }
+    }    
 
     public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
         @Override
@@ -105,7 +164,10 @@ public class TenCountiesBest {
                     
                 }
             });
-            for(String[] i : aqi_averages){
+            for(String[] i : aqi_averages.subList(0,9)){
+                context.write(new Text(i[0]+","+i[1]), NullWritable.get());
+            }
+            for(String[] i : aqi_averages.subList(aqi_averages.size()-10,aqi_averages.size())){
                 context.write(new Text(i[0]+","+i[1]), NullWritable.get());
             }
         }
