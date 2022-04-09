@@ -24,11 +24,11 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-public class TenCountiesBest {
+public class Question3and4 {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "aqi total");
-        job.setJarByClass(TenCountiesBest.class);
+        job.setJarByClass(Question3and4.class);
         job.setMapperClass(TokenizerMapper.class);
         job.setReducerClass(IntSumReducer.class);
         job.setMapOutputKeyClass(Text.class);
@@ -41,7 +41,7 @@ public class TenCountiesBest {
 
         Configuration conf2 = new Configuration();
         Job job2 = Job.getInstance(conf2, "aqi total");
-        job2.setJarByClass(TenCountiesBest.class);
+        job2.setJarByClass(Question3and4.class);
         job2.setMapperClass(LocationMapper.class);
         job2.setReducerClass(LocationReducer.class);
         job2.setMapOutputKeyClass(Text.class);
