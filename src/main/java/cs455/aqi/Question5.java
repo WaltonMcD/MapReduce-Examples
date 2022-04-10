@@ -23,6 +23,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 public class Question5 {
     
     public static void main(String[] args) throws Exception {
+        System.out.println(args[0]);
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "Question 5");
         job.setJarByClass(Question5.class);
