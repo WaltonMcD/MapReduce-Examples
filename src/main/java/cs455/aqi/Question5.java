@@ -109,17 +109,14 @@ public class Question5 {
 
     public static class FinalReducer extends Reducer<Text,Text,Text,Text> {
         private TreeMap<String, String> tmap;
-        private ArrayList<Double> sortedList;
-        private ArrayList<String> yearAndWeekList;
 
         public void setup(Context context) throws IOException, InterruptedException {
             tmap = new TreeMap<String, String>();
-            sortedList = new ArrayList<Double>();
-            yearAndWeekList = new ArrayList<String>();
-            
         }
 
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+            ArrayList<Double> sortedList = new ArrayList<Double>();
+            ArrayList<String> yearAndWeekList = new ArrayList<String>();
 
             for(Text val : values){
                 String[] line = val.toString().split(",");
@@ -144,9 +141,6 @@ public class Question5 {
             String[] check = yearAndWeek.split(",");
             Integer weekOne = Integer.parseInt(check[1]);
             Integer weekTwo = Integer.parseInt(check[3]);
-            if(weekOne+1 != weekTwo){
-                return;
-            }
 
             sortedList = new ArrayList<Double>();
             yearAndWeekList = new ArrayList<String>();
