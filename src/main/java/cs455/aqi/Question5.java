@@ -141,6 +141,12 @@ public class Question5 {
                     yearAndWeek = yearAndWeekList.get(i) + "," + yearAndWeekList.get(i+1);
                 }
             }
+            String[] check = yearAndWeek.split(",");
+            Integer weekOne = Integer.parseInt(check[1]);
+            Integer weekTwo = Integer.parseInt(check[3]);
+            if(weekOne+1 != weekTwo){
+                return;
+            }
 
             sortedList = new ArrayList<Double>();
             yearAndWeekList = new ArrayList<String>();
