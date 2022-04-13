@@ -13,6 +13,7 @@ import java.time.temporal.WeekFields;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -76,19 +77,19 @@ public class Question5 {
         }
     }
 
-    public static class IntSumReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
+    public static class IntSumReducer extends Reducer<Text,IntWritable,Text,DoubleWritable> {
 
         public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-            Integer total = 0;
+            Double total = 0.0;
             Integer count = 0;
             for (IntWritable val : values) {
                 total += val.get();
                 count++;
                 
             }
-            Integer avg = total/count;
+            Double avg = total/count;
             
-            context.write(key, new IntWritable(avg));
+            context.write(key, new DoubleWritable(avg));
         }
     }
 
@@ -106,36 +107,51 @@ public class Question5 {
         }
     }
 
-    public static class FinalReducer extends Reducer<Text,Text,Text,IntWritable> {
+    public static class FinalReducer extends Reducer<Text,Text,Text,Text> {
         private TreeMap<String, String> tmap;
-        private ArrayList<Integer> sortedList;
+        private ArrayList<Double> sortedList;
+        private ArrayList<String> yearAndWeekList;
 
         public void setup(Context context) throws IOException, InterruptedException {
             tmap = new TreeMap<String, String>();
-            sortedList = new ArrayList<Integer>();
+            sortedList = new ArrayList<Double>();
+            yearAndWeekList = new ArrayList<String>();
+            
         }
 
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 
             for(Text val : values){
                 String[] line = val.toString().split(",");
-                tmap.put((line[0] + line[1]) , line[2]);
+                tmap.put((line[1] + "," + line[0]) , line[2]);
             }
 
             for(Map.Entry<String,String> entry : tmap.entrySet()) {
-                Integer value = Integer.parseInt(entry.getValue());
+                Double value = Double.parseDouble(entry.getValue());
                 sortedList.add(value);
+                yearAndWeekList.add(entry.getKey());
             }
 
-            Integer max = Integer.MIN_VALUE;
+            Double max = 0.0;
+            String yearAndWeek = "";
             for(int i = 0; i < sortedList.size()-1; i++){
-                Integer diff = sortedList.get(i+1) - sortedList.get(i);
+                Double diff = sortedList.get(i+1) - sortedList.get(i);
                 if(diff > max){
                     max = diff;
+                    yearAndWeek = yearAndWeekList.get(i) + "," + yearAndWeekList.get(i+1);
                 }
             }
+            String[] check = yearAndWeek.split(",");
+            Integer weekOne = Integer.parseInt(check[1]);
+            Integer weekTwo = Integer.parseInt(check[3]);
+            if(weekOne+1 != weekTwo){
+                return;
+            }
 
-            context.write(key, new IntWritable(max));
+            sortedList = new ArrayList<Double>();
+            yearAndWeekList = new ArrayList<String>();
+            String out = yearAndWeek + " : " +max;
+            context.write(key, new Text(out));
         }
     }
 }
