@@ -126,15 +126,15 @@ public class Question_6 {
 
             Double max = 0.0;
             String year = "";
-            for(int i = 0; i < sortedAQI.size()-1; i++){
-                Double diff = sortedAQI.get(i+1) - sortedAQI.get(i);
+            for(int i = 0; i < sortedAQI.size()-10; i++){
+                Double diff = sortedAQI.get(i+10) - sortedAQI.get(i);
                 if(diff > max){
                     max = diff;
-                    year = sortedYear.get(i) + "," + sortedYear.get(i+1);
+                    year = sortedYear.get(i) + "," + sortedYear.get(i+10);
                 }
             }
 
-            String out = year + " : " +max;
+            String out = year + " : " + max;
             context.write(key, new Text(out));
         }
     }
