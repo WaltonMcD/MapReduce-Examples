@@ -15,6 +15,6 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'cs455.aqi.Question5'
+        attributes 'Main-Class': 'cs455.aqi.Question_6'
     }
 }
