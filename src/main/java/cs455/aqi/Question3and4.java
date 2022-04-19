@@ -131,7 +131,7 @@ public class Question3and4 {
                     
                 }
             });
-            for(String[] i : aqi_averages.subList(0,9)){
+            for(String[] i : aqi_averages.subList(0,10)){
                 context.write(new Text(i[0]+","+i[1]), NullWritable.get());
             }
             for(String[] i : aqi_averages.subList(aqi_averages.size()-10,aqi_averages.size())){
